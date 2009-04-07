@@ -1,0 +1,32 @@
+# $Id$
+
+# precedence ordered lowest to highest
+# used http://www.geocities.com/siliconvalley/horizon/5444/pas039.htm as a reference.
+
+## comparitive operators
+proto 'infix::='    is precedence(1)        { ... }
+proto 'infix:<>'    is tighter('infix::=')  { ... }
+proto 'infix:<'     is equiv('infix:<>')    { ... }
+proto 'infix:<='    is equiv('infix:<>')    { ... }
+proto 'infix:>'     is equiv('infix:<>')    { ... }
+proto 'infix:>='    is equiv('infix:<>')    { ... }
+proto 'infix:='     is equiv('infix:<>')    { ... }
+proto 'infix:=='     is equiv('infix:<>')    { ... }
+
+## additive operators
+proto 'infix:or'    is tighter('infix:<>')  is pasttype('unless')   { ... }
+proto 'infix:+'     is equiv('infix:or')    is pirop('add')         { ... }
+proto 'infix:-'     is equiv('infix:or')    is pirop('sub')         { ... }
+
+## multiplicative operators
+proto 'infix:and'   is tighter('infix:or')  is pasttype('if')       { ... }
+proto 'infix:*'     is equiv('infix:and')   is pirop('mul')         { ... }
+proto 'infix:/'     is equiv('infix:and')   is pirop('div')         { ... }
+proto 'infix:div'   is equiv('infix:and')   is pirop('div')         { ... }
+proto 'infix:mod'   is equiv('infix:and')   is pirop('mod')         { ... }
+
+##  expressions and operators
+proto 'prefix:not'  is tighter('infix:and') is pirop('not')         { ... }
+proto 'term:'       is tighter('prefix:not')  is parsed(&term)        { ... }
+
+#TODO implement the IN and bitwise operators like SHFT.

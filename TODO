@@ -1,0 +1,28 @@
+URGENT:
+* type checking on array assignments
+
+* typed constants
+
+* add exit statements for procedures
+
+* prevent functions being called without an lvalue
+
+
+WISH LIST:
+
+* prevent standalone integers from being used in expressions eg:
+var x : integer;
+begin
+x := 1;
+if x then do
+//or
+if 1 then do
+//both ilegal
+
+* require expressions combinations with 'and', 'or' etc to use brackets 
+x < 1 and y < 1     // ilegal 
+(x < 1) and (y < 1) // allowed
+
+* divisions of constants must return a real
+i := 12 / 2; //should return a real.
+

@@ -1,0 +1,70 @@
+/* PorcupineInteger.pmc
+ *  Copyright (C) 2009, Parrot Foundation.
+ *  SVN Info
+ *     $Id$
+ *  Overview:
+ *     These are the vtable functions for the PorcupineInteger base class
+ *  Data Structure and Algorithms:
+ *  History:
+ *  Notes:
+ *     Please remove unneeded entries.
+ *  References:
+ */
+
+
+#include "parrot/parrot.h"
+
+pmclass PorcupineInteger extends Integer group porcupine_group dynpmc {
+    INTVAL cmp_string(PMC* value) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: Can not compare integer to a string!");
+        return (INTVAL)0;
+    }
+
+    PMC* concatenate_str(STRING* value, PMC* dest) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: Can not concatenate integer to a string!");
+        return (PMCNULL);
+    }
+
+	PMC* get_bignum() {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: Expecting a big integer!");
+        return (PMCNULL);
+	}
+
+/*    FLOATVAL get_number() {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: Cannot use integer as real!");
+        return (FLOATVAL)0;
+    } */
+
+    FLOATVAL get_number_keyed_int(INTVAL key) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: Expecting a keyed real!");
+        return (FLOATVAL)0;
+    }
+
+    STRING* get_repr() {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: #0");
+        return (STRING*)0;
+    }
+
+    void set_bignum_int(INTVAL value) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: #1");
+    }
+
+    void set_number_keyed_int(INTVAL key, FLOATVAL value) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: #2");
+    }
+
+  /*  void set_number_native(FLOATVAL value) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: #3");
+	}*/
+
+    void set_string_native(STRING* value) {
+		Parrot_ex_throw_from_c_args(interp, NULL, 1, "TYPE ERROR: #4");
+    }
+}
+
+/*
+ * Local Variables:
+ *   c-file-style: "parrot"
+ * End:
+ * vim: expandtab shiftwidth=4:
+ */

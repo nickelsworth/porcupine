@@ -1,0 +1,347 @@
+# $Id$
+
+=begin overview
+
+This is the grammar for Porcupine written as a sequence of Perl 6 rules.
+
+I have tried to follow this Pascal EBNF as closely as possible:
+
+http://www.lrz-muenchen.de/~bernhard/Pascal-EBNF.html
+
+=end overview
+
+grammar Porcupine::Grammar is PCT::Grammar;
+
+rule TOP {
+    {*} #= open
+    [ 
+         
+            <program_heading> 
+            <block>
+            [ '.' || <panic: "Expecting '.' following end"> ]
+    | 
+         
+            <unit_heading>
+            <unit_block>
+        
+    ]
+
+    [ $ || <panic: 'Syntax error'>]
+    
+    {*} #= close
+}
+
+token ws {
+    <!ww>
+    [ 
+    # // delphi comments
+    | '//' \N* \n?
+    # (* comments *)
+    | '(*' .*? '*)'
+    # { comments }
+    | '{' .*?  '}'
+    | \s+ 
+    ]*
+}
+
+rule program_heading {
+    'program' <identifier> <terminator>
+}
+
+rule unit_heading {
+    'unit' <identifier> <terminator>
+}
+
+rule block {
+    <declaration_part>?
+    <statement_part>
+    {*}
+}
+
+rule unit_block {
+    <declaration_part>
+    {*}
+}
+
+rule declaration_part {
+    <use_declaration_part>?
+    <type_definition_part>?
+    <constant_definition_part>?
+    <variable_declaration_part>?
+    [<procedure_declaration> <terminator>]*
+    [<function_declaration> <terminator>]*
+    {*}
+}
+
+rule use_declaration_part {
+    'uses'
+        [<identifier> <terminator> ]*
+    {*}
+}
+
+rule type_definition_part {
+    'type'
+        [<type_definition> <terminator> ]*
+    {*}
+}
+
+rule type_definition {
+    <identifier> '=' 'class'
+    [<class_item> <terminator>]*
+    'end'
+    {*}
+}
+
+rule class_item {
+    | <class_proto_procedure> {*} #= class_proto_procedure
+}
+
+rule class_proto_procedure {
+    'procedure' <identifier>
+    {*}
+}
+
+rule constant_definition_part {
+    'const'
+    [<constant_definition> <terminator> ]*
+}
+
+rule constant_definition {
+    <identifier> '=' [ <value=real> | <value=integer> | <value=string> | <value=boolean> ]
+    {*}
+}
+
+rule variable_declaration_part {
+    'var'
+   [ <variable_declaration> <terminator> ]*
+    {*}
+}
+
+rule variable_declaration {
+     <identifier> [',' <identifier>]* ':' <type>
+     {*}
+}
+
+rule procedure_declaration {
+    <procedure_heading>
+    <procedure_body=block> 
+    {*}
+}
+
+rule procedure_heading {
+    'procedure' <identifier> 
+    ['(' <formal_parameter_list> ')']?
+    <terminator>
+    {*}
+}
+
+rule function_declaration {
+    <function_heading>
+    <function_body=block>
+    {*}
+}
+
+rule function_heading {
+    'function' <identifier> 
+    ['(' <formal_parameter_list> ')']? [[':' <type>] || <panic: 'Function missing type declaration'>]
+    <terminator>
+    {*}   
+}
+
+rule formal_parameter_list {
+    <formal_parameter_section> [';' <formal_parameter_section>]*
+    {*}
+}
+
+rule formal_parameter_section {
+    | <value_parameter> {*} #= value_parameter
+}
+
+rule value_parameter {
+     <variable> [',' <variable>]? ':' <type>
+     {*}
+}
+
+rule statement_part {
+    'begin'
+    [<statement> <terminator>]*
+    'end'
+    {*}
+}
+
+rule statement {
+    | <compound_statement> {*} #= compound_statement
+    | <array_assignment> {*} #= array_assignment
+    | <procedure_statement> {*} #= procedure_statement
+    | <method_statement> {*} #= method_statement
+    | <if_statement> {*} #= if_statement
+    | <while_statement> {*} #= while_statement
+    | <for_statement> {*} #= for_statement
+    | <repeat_statement> {*} #= repeat_statement
+    | <exit_statement> {*}  #= exit_statement
+    | <raise_statement> {*}  #= raise_statement
+    | <try_statement> {*}  #= try_statement
+    | <expression> {*} #= expression
+    | <show_block_statement> {*}  #= show_block_statement
+}
+
+rule compound_statement {
+    'begin'
+    [<statement> <terminator>]*
+    'end'
+    {*}
+}
+
+rule array_assignment {
+    <array_variable> ':=' <expression>
+   {*}
+}
+
+rule procedure_statement {
+    <identifier> '(' [<expression> [',' <expression>]*]? ')'
+    {*}
+}
+
+rule method_statement {
+    <class=entire_variable>'.'<method=identifier> '(' [<expression> [',' <expression>]*]? ')'
+    {*}
+}
+
+rule if_statement {
+    'if' [<expression> || <panic: "Expression expected after 'if'">] 
+    'then'
+    <statement>
+    ['else'  <else=statement> ]?
+    {*}
+}
+
+rule while_statement {
+    'while' <expression> 'do'
+    <statement>
+    {*}
+}
+
+rule for_assignment {
+    <variable> ':=' <expression> {*}
+}
+
+token for_direction {
+    | 'to' 
+    | 'downto'
+}
+
+rule for_statement {
+    'for' <for_assignment> <for_direction> <expression> 'do'
+        <statement>
+    {*}
+}
+
+rule repeat_statement {
+    'repeat'
+    {*} #= open
+        [<statement> <terminator>]*
+    'until' <expression>
+    {*} #= close
+}
+
+token exit_statement {
+    'exit' {*}
+}
+
+rule raise_statement {
+    'raise' <expression> {*}
+}
+
+rule try_statement {
+    'try'
+        [<try=statement> <terminator>]*
+    'finally'
+        [<finally=statement> <terminator>]*
+    'end'
+    {*}
+}
+
+token  show_block_statement {
+    'show_blocks' {*}
+}
+
+rule variable {
+    | <array_variable> {*} #= array_variable
+    | <entire_variable> {*} #= entire_variable
+}
+
+rule entire_variable {
+    <identifier> {*}
+}
+
+rule array_variable {
+    <identifier>'['<expression>']' ['[' <expression> ']']*
+    {*}
+}
+
+token identifier {
+    <!keyword> \w+
+}
+
+rule type {
+   | <simple_type> {*} #= simple_type
+   | <array_type> {*} #= array_type
+}
+
+rule array_type {
+    'array' '[' 0 '..' <size=integer> ']' 'of' <simple_type>
+    {*}
+}
+
+token simple_type {
+    [ 'integer' | 'real' | 'string' | 'boolean' | 'text' | <identifier>]
+   # {*}
+}
+
+token keyword {
+    [ 
+        | 'and' | 'array' | 'begin' | 'case' | 'const' | 'div' 
+        | 'do' | 'downto' | 'else' | 'end' | 'file' | 'for' 
+        | 'function' | 'goto' | 'if' | 'in' | 'label' | 'mod' 
+        | 'nil' | 'not' | 'of' | 'or' | 'packed' | 'procedure' 
+        | 'program' | 'record' | 'repeat' | 'set' | 'then' | 'to' 
+        | 'type' | 'until' | 'var' | 'while' | 'with' | 'exit' | 'raise' 
+        | 'try' | 'finally'
+    ]>>
+}
+
+rule term {
+    | <real> {*}                #= real
+    | <boolean> {*}             #= boolean
+    | <integer> {*}             #= integer
+    | <string> {*}              #= string
+    | <procedure_statement> {*}  #= procedure_statement
+    | <variable>         {*}  #= variable
+    | '(' <expression> ')' {*}  #= expression
+}
+
+rule terminator {
+    [';' || <panic: "Missing ';' terminator"> ]
+}
+
+token integer { 
+    \d+ 
+    {*}
+}
+
+token real { 
+    \d+ '.' \d+
+    {*}
+}
+
+token string {
+    \' <string_literal: '\''> \'
+    {*}
+}
+
+token boolean {
+    ['TRUE' | 'FALSE']
+    {*}
+}
+
+rule expression is optable { ... }

@@ -1,0 +1,6 @@
+Language 'Porcupine' an implementation of pascal for Parrot.
+
+perl Configure.pl
+make # to build compiler / interpreter.
+make test # to run test suite.
+make testtest # to compile test suite against gpc.
