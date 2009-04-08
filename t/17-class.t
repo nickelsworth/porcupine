@@ -1,7 +1,7 @@
 program classtest;
 type
 	testclass = class
-		procedure ok;
+		procedure n2;
 	end;
 (*
 procedure testclass.ok;
@@ -11,9 +11,14 @@ end;
 *)
 var
 	test : testclass;  
-
-
 begin
-	testclass.ok(); 
+	writeln('1..1');
+
+	try
+		testclass.n2(); 
+	finally
+		writeln('ok 1');
+		writeln('# output: ', exception);
+	end;
 end.
 

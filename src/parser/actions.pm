@@ -124,15 +124,8 @@ method type_definition($/){
     $?TYPE{$class} := $class;
     my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
     $past.pirflags(':init :load');
-
-    my $pir :=  "$P0 = get_root_global ['parrot'], 'P6metaclass'\n
-        push_eh subclass_done\n
-        $P2 = $P0.'new_class'(%0)\n
-      subclass_done:\n
-        pop_eh";
-    my $pir1 := 
-    "$P0 = get_root_global ['parrot'], 'P6metaclass'\n \
-    $P2 = $P0.'new_class'(%0)";
+    my $pir := "\t$P0 = get_root_global ['parrot'], 'P6metaclass'\n" ~
+                ~ "\t$P2 = $P0.'new_class'(%0)";
     $past.push( PAST::Op.new($class, :inline($pir), :node($/)) );
     for $<class_item> {
         $past.push($($_));
@@ -147,7 +140,8 @@ method class_item($/, $key){
 method class_proto_procedure($/){
     my $name := ~$<identifier>;
     my $past := PAST::Block.new(:name($name), :blocktype('method'), :node($/));
-    $past.push(PAST::Op.new( :inline('    print "ok 1\n"')));
+    my $msg := "method ("~ $name ~ ") has only been prototyped!";
+	$past.push(PAST::Op.new( $msg, :inline("\t'!EXCEPTION'(%0)"), :node($/) ));
     $past.control('return_pir');
     make $past;
 }
