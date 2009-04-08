@@ -217,7 +217,14 @@ method procedure_declaration($/){
 
 method procedure_heading($/){
     my $name :=  ~$<identifier>;
-    my $past := PAST::Block.new(:name($name), :blocktype('declaration'), :node($/));
+    my $blk := 'declaration';
+    my $ns;
+    if $<namespace>[0] {
+        $blk := 'method';
+        $ns := ~$<namespace>[0];
+    }
+
+    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($ns), :node($/));
     $past.symbol_defaults( :scope('lexical') );
 
     if $<formal_parameter_list>{
@@ -362,10 +369,8 @@ method procedure_statement($/){
 
 method method_statement($/){
     my $m := ~$<method>;
-    my $cl := ~$<class>;
     my $past := PAST::Op.new( :name($m), :pasttype('callmethod'), :node( $/ ) );
-    my @a;
-    $past.push(PAST::Var.new(:scope('package'), :namespace(@a), :name($cl), :node($/)));
+    $past.push(PAST::Var.new(:scope('package'), :name(~$<namespace>), :node($/)));
     if $<expression>{
         for $<expression> {
 	        $past.push( $( $_ ) );

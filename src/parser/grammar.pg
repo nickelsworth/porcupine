@@ -129,7 +129,7 @@ rule procedure_declaration {
 }
 
 rule procedure_heading {
-    'procedure' <identifier> 
+    'procedure' [<namespace>'.']?<identifier> 
     ['(' <formal_parameter_list> ')']?
     <terminator>
     {*}
@@ -203,7 +203,7 @@ rule procedure_statement {
 }
 
 rule method_statement {
-    <class=entire_variable>'.'<method=identifier> '(' [<expression> [',' <expression>]*]? ')'
+    <namespace>'.'<method=identifier> '(' [<expression> [',' <expression>]*]? ')'
     {*}
 }
 
@@ -281,6 +281,10 @@ rule array_variable {
 
 token identifier {
     <!keyword> \w+
+}
+
+token namespace {
+    <identifier>
 }
 
 rule type {
