@@ -315,6 +315,7 @@ rule term {
     | <boolean> {*}             #= boolean
     | <integer> {*}             #= integer
     | <string> {*}              #= string
+    | <method_statement> {*}  #= method_statement
     | <procedure_statement> {*}  #= procedure_statement
     | <variable>         {*}  #= variable
     | '(' <expression> ')' {*}  #= expression

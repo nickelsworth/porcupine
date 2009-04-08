@@ -9,12 +9,11 @@ begin
 	Writeln('ok 2');
 end;
 *)
-
 var
 	test : testclass;  
 
+
 begin
-	writeln('1..1');
 	testclass.ok(); 
 end.
 

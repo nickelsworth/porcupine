@@ -7,6 +7,7 @@
 .sub 'infix::='
 	.param pmc lval
 	.param pmc rval
+	goto do_assign
 	$I0 = lval.'!ACCEPTS'(rval)
 	if $I0 goto do_assign
 	'!EXCEPTION'("Type mismatch in assignment!")
