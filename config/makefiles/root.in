@@ -55,6 +55,7 @@ BUILTINS_PIR = \
   src/builtins/array.pir \
 
 CLASSES_PIR = \
+  src/classes/meta.pir \
   src/classes/integer.pir \
   src/classes/string.pir \
   src/classes/real.pir \

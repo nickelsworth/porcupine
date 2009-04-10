@@ -8,14 +8,13 @@ PorcupineFile - file class
 .include 'cclass.pasm'
 
 .sub 'onload' :anon :init :load
-	.local pmc metac,intc
-	intc = newclass 'PorcupineFile'
-	addattribute intc, 'handle'
-	addattribute intc, 'path'
-	addattribute intc, 'mode'
-#	metac = get_root_global ['parrot'], 'P6metaclass'
-#	intc = metac.'new_class'('PorcupineFile', 'parent'=>'parrot;File', 'attr'=>'!io' )
-#	metac.'register'('File', 'parent'=>intc, 'protoobject'=>intc)
+	.local pmc metac,intc, c
+	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	intc = metac.'new_class'('PorcupineFile', 'parent'=>'PorcupineMetaClass')
+	c = get_class 'PorcupineFile'
+	addattribute c, 'handle'
+	addattribute c, 'path'
+	addattribute c, 'mode'
 .end
 
 .sub 'get_bool' :vtable

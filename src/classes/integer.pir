@@ -8,14 +8,9 @@ PorcupineInteger - type integer class
 
 .sub 'onload' :anon :init :load
 	.local pmc metac,intc
-	metac = get_root_global ['parrot'], 'P6metaclass'
-	intc = metac.'new_class'('PorcupineInteger', 'parent'=>'parrot;Integer')
+	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	intc = metac.'new_class'('PorcupineInteger', 'parent'=>'parrot;Integer PorcupineMetaClass')
 	metac.'register'('Integer', 'parent'=>intc, 'protoobject'=>intc)
-.end
-
-.sub '!ACCEPTS' :method
-	.param pmc topic
-	.tailcall 'infix:=='(self, topic)
 .end
 
 # Local Variables:

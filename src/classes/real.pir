@@ -8,8 +8,8 @@ PorcupineReal - real type class
 
 .sub 'onload' :anon :init :load
 	.local pmc metac,intc
-	metac = get_root_global ['parrot'], 'P6metaclass'
-	intc = metac.'new_class'('PorcupineReal', 'parent'=>'parrot;Float')
+	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	intc = metac.'new_class'('PorcupineReal', 'parent'=>'parrot;Float PorcupineMetaClass')
 	metac.'register'('Float', 'parent'=>intc, 'protoobject'=>intc)
 .end
 
