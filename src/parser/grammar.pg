@@ -94,10 +94,16 @@ rule type_definition {
 
 rule class_item {
     | <class_proto_procedure> {*} #= class_proto_procedure
+    | <class_proto_function> {*} #= class_proto_function
 }
 
 rule class_proto_procedure {
     'procedure' <identifier>
+    {*}
+}
+
+rule class_proto_function {
+    'function' <identifier>
     {*}
 }
 
@@ -142,7 +148,7 @@ rule function_declaration {
 }
 
 rule function_heading {
-    'function' <identifier> 
+    'function' [<namespace>'.']?<identifier> 
     ['(' <formal_parameter_list> ')']? [[':' <type>] || <panic: 'Function missing type declaration'>]
     <terminator>
     {*}   
@@ -203,7 +209,7 @@ rule procedure_statement {
 }
 
 rule method_statement {
-    <namespace>'.'<method=identifier> '(' [<expression> [',' <expression>]*]? ')'
+    [<variable> | <namespace>]'.'<method=identifier> '(' [<expression> [',' <expression>]*]? ')'
     {*}
 }
 
@@ -284,7 +290,7 @@ token identifier {
 }
 
 token namespace {
-    <identifier>
+    <identifier> #['.'<identifier>]
 }
 
 rule type {

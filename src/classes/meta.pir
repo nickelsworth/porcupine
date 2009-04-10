@@ -21,6 +21,21 @@ PorcupineMetaClass - type metaclass class
 	.tailcall 'infix:=='(self, topic)
 .end
 
+#constructor borrowed from cardinal
+.sub 'create' :method
+#	.param pmc args :slurpy
+#	.param pmc args_named :named :slurpy
+	.local pmc meta
+	meta = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	$P0 = meta.'get_parrotclass'(self)
+	$P1 = $P0.'new'()
+	.return($P1)
+.end
+
+.sub 'get_bool' :vtable
+    .return (1)
+.end
+
 # Local Variables:
 #   mode: pir
 #   fill-column: 100

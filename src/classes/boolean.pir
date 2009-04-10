@@ -13,11 +13,6 @@ PorcupineBoolean - integer class
 	metac.'register'('Boolean', 'parent'=>intc, 'protoobject'=>intc)
 .end
 
-.sub '!ACCEPTS' :method
-	.param pmc topic
-	.tailcall 'infix:=='(self, topic)
-.end
-
 # Local Variables:
 #   mode: pir
 #   fill-column: 100

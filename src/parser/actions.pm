@@ -124,8 +124,8 @@ method type_definition($/){
     $?TYPE{$class} := $class;
     my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
     $past.pirflags(':init :load');
-    my $pir := "\t$P0 = get_root_global ['parrot'], 'P6metaclass'\n" ~
-                ~ "\t$P2 = $P0.'new_class'(%0)";
+    my $pir := "\t$P0 = get_hll_global ['PorcupineMetaClass'], '!METACLASS'\n" ~
+                ~ "\t$P1 = $P0.'new_class'(%0, 'parent'=>'PorcupineMetaClass')";
     $past.push( PAST::Op.new($class, :inline($pir), :node($/)) );
     for $<class_item> {
         $past.push($($_));
@@ -140,7 +140,16 @@ method class_item($/, $key){
 method class_proto_procedure($/){
     my $name := ~$<identifier>;
     my $past := PAST::Block.new(:name($name), :blocktype('method'), :node($/));
-    my $msg := "method ("~ $name ~ ") has only been prototyped!";
+    my $msg := "procedure ("~ $name ~ ") has only been prototyped!";
+	$past.push(PAST::Op.new( $msg, :inline("\t'!EXCEPTION'(%0)"), :node($/) ));
+    $past.control('return_pir');
+    make $past;
+}
+
+method class_proto_function($/){
+    my $name := ~$<identifier>;
+    my $past := PAST::Block.new(:name($name), :blocktype('method'), :node($/));
+    my $msg := "function ("~ $name ~ ") has only been prototyped!";
 	$past.push(PAST::Op.new( $msg, :inline("\t'!EXCEPTION'(%0)"), :node($/) ));
     $past.control('return_pir');
     make $past;
@@ -261,9 +270,17 @@ method function_declaration($/){
 method function_heading($/){
     my $name :=  ~$<identifier>;
 	$?FUNCTION := $name;
+    
+    my $blk := 'declaration';
+    my $ns;
+    if $<namespace>[0] {
+        $blk := 'method';
+        $ns := ~$<namespace>[0];
+    }
+
+    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($ns), :node($/));
 
     my $ptype := ~$<type>;
-	my $past := PAST::Block.new(:name($name), :blocktype('declaration'), :node($/));
     $past.symbol_defaults( :scope('lexical') );
 
 	if $<formal_parameter_list>{
@@ -368,9 +385,37 @@ method procedure_statement($/){
 }
 
 method method_statement($/){
-    my $m := ~$<method>;
-    my $past := PAST::Op.new( :name($m), :pasttype('callmethod'), :node( $/ ) );
-    $past.push(PAST::Var.new(:scope('package'), :name(~$<namespace>), :node($/)));
+    my $past := PAST::Op.new( :name(~$<method>), :pasttype('callmethod'), :node( $/ ) );
+    my $ob;
+    my $ns;
+    my $owner;
+
+    if $<variable> {
+        for @?BLOCK {
+            if $_.symbol(~$<variable>) {
+                $ob := 1;
+            }
+        }
+        if $ob {
+            $owner := $($<variable>)
+        }
+    }
+    
+    unless $owner {
+        if $<variable> {
+            $ns := ~$<variable>;
+        }else{
+            $ns := ~$<namespace>;
+        }
+        $owner := PAST::Var.new(:scope('package'), :name($ns), :node($/));
+    }
+
+    unless $owner {
+        $/.panic("Couldn't find namespace or object: " ~ $ns);
+    }
+  
+    $past.push($owner);
+    
     if $<expression>{
         for $<expression> {
 	        $past.push( $( $_ ) );
