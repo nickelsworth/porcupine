@@ -54,7 +54,7 @@ rule unit_heading {
 
 rule block {
     <declaration_part>?
-    <statement_part>
+    [ <statement_part> || <panic: "Expecting 'begin' and 'end'"> ]
     {*}
 }
 
@@ -86,7 +86,7 @@ rule type_definition_part {
 }
 
 rule type_definition {
-    <identifier> '=' 'class'
+    <namespace> '=' 'class'
     [<class_item> <terminator>]*
     'end'
     {*}
@@ -290,7 +290,7 @@ token identifier {
 }
 
 token namespace {
-    <identifier> #['.'<identifier>]
+    <identifier> 
 }
 
 rule type {

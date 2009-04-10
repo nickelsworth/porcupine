@@ -120,7 +120,7 @@ method type_definition_part($/){
 }
 
 method type_definition($/){
-    my $class := ~$<identifier>;
+    my $class := ~$<namespace>;
     $?TYPE{$class} := $class;
     my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
     $past.pirflags(':init :load');

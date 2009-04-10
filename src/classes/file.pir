@@ -17,20 +17,6 @@ PorcupineFile - file class
 	addattribute c, 'mode'
 .end
 
-.sub 'get_bool' :vtable
-    .return (1)
-.end
-
-.sub '!ACCEPTS' :method
-	.param pmc topic
-	$I0 = 'infix:=='(self, topic)
-	if $I0, same_type
-	.return(0)
-same_type:
-	.return(1)
-.end
-
-
 .sub 'assign' :method
 		.param pmc path
 		.param pmc mode
