@@ -18,15 +18,13 @@ rule TOP {
          
             <program_heading> 
             <block>
-            [ '.' || <panic: "Expecting '.' following end"> ]
+            [ '.' || <panic: "Expecting a '.' following 'end'"> ]
     | 
          
             <unit_heading>
             <unit_block>
         
     ]
-
-    [ $ || <panic: 'Syntax error'>]
     
     {*} #= close
 }
@@ -54,12 +52,12 @@ rule unit_heading {
 
 rule block {
     <declaration_part>?
-    [ <statement_part> || <panic: "Expecting 'begin' and 'end'"> ]
+    [ <statement_part> || <panic: "Syntax error.'"> ]
     {*}
 }
 
 rule unit_block {
-    <declaration_part>
+    [ <declaration_part> || <panic: "Missing declaration part."> ]
     {*}
 }
 
@@ -74,7 +72,7 @@ rule declaration_part {
 }
 
 rule use_declaration_part {
-    'uses'
+        'uses'
         [<identifier> <terminator> ]*
     {*}
 }
@@ -85,6 +83,7 @@ rule type_definition_part {
     {*}
 }
 
+# add panic statement
 rule type_definition {
     <namespace> '=' 'class'
     [<class_item> <terminator>]*
@@ -98,12 +97,12 @@ rule class_item {
 }
 
 rule class_proto_procedure {
-    'procedure' <identifier>
+    'procedure' [ <identifier> || <panic: "Prototype missing identifier">]
     {*}
 }
 
 rule class_proto_function {
-    'function' <identifier>
+    'function'  [ <identifier> || <panic: "Prototype missing identifier">]
     {*}
 }
 
@@ -113,7 +112,8 @@ rule constant_definition_part {
 }
 
 rule constant_definition {
-    <identifier> '=' [ <value=real> | <value=integer> | <value=string> | <value=boolean> ]
+    <identifier> '=' [ <value=real> | <value=integer> | <value=string> | <value=boolean> | 
+        <panic: "Constant declaration missing value">]
     {*}
 }
 
@@ -124,7 +124,7 @@ rule variable_declaration_part {
 }
 
 rule variable_declaration {
-     <identifier> [',' <identifier>]* ':' <type>
+     <identifier> [',' <identifier>]* [':' <type> | <panic: "Variable declaration missing type">| ]
      {*}
 }
 
@@ -164,14 +164,14 @@ rule formal_parameter_section {
 }
 
 rule value_parameter {
-     <variable> [',' <variable>]? ':' <type>
+     <variable> [',' <variable>]? [':' <type>| <panic: 'Parameter missing type'>]
      {*}
 }
 
 rule statement_part {
     'begin'
     [<statement> <terminator>]*
-    'end'
+    ['end' | <panic: "Missing end of statement block">]
     {*}
 }
 
