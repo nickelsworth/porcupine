@@ -27,8 +27,17 @@ begin
 	else
 		pand := FALSE;
 end;
+
+function incrt(x :integer) :integer;
+var
+	y : integer;
 begin
-	writeln('1..7');
+	y := 4;
+	incrt := x + y;
+end;
+
+begin
+	writeln('1..8');
 	writeln(k, 1);
 	ok := incr(1);
 	writeln(k, ok);
@@ -41,4 +50,5 @@ begin
 
 	if pand(TRUE, TRUE) then
 		writeln(k, 7);
+	writeln(k, incrt(4));
 end.
