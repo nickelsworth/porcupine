@@ -16,11 +16,11 @@ value of the comment is passed as the second argument to the method.
 
 class Porcupine::Grammar::Actions;
 our $?BLOCK;
-our $?CONSTANT;
 our @?BLOCK;
-our $?FUNCTION;
+our $?CONSTANT;
 our $?TYPE;
 our $?ARRAY_CONST;
+our $?NAMESPACE;
 
 #array constructor table
 $?ARRAY_CONST{'integer'} := '!NEWINTEGERARRAY';
@@ -155,6 +155,7 @@ method class_proto_function($/){
     make $past;
 }
 
+
 method variable_declaration_part($/){
     my $past := PAST::Stmts.new( :node( $/ ));
     for $<variable_declaration>{
@@ -263,19 +264,19 @@ method function_declaration($/){
 
 	$past.push( PAST::Op.new( $var, :pasttype('return'), :node($/)));
     $past.control('return_pir');
-	$?FUNCTION := '';
     make $past;
 }
 
 method function_heading($/){
     my $name :=  ~$<identifier>;
-	$?FUNCTION := $name;
     
     my $blk := 'declaration';
     my $ns;
     if $<namespace>[0] {
         $blk := 'method';
         $ns := ~$<namespace>[0];
+        #load namespace block onto stack.
+
     }
 
     my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($ns), :node($/));
@@ -295,12 +296,11 @@ method function_heading($/){
 
 	$past.push( PAST::Var.new( :name($name),
 			:scope('lexical'),
-			#FIXME :need to set to func type
 			:viviself($type),
 			:isdecl(1),
 			:node($/) ) );
 
-	$past.symbol($name, :scope('lexical'), :type($type));
+	$past.symbol($name, :type($type));
     
 	# add block to stack.
     $?BLOCK := $past;
@@ -542,7 +542,7 @@ method repeat_statement($/, $key){
 }
 
 method exit_statement($/) {
-	my $var := PAST::Var.new( :name($?FUNCTION),
+	my $var := PAST::Var.new( :name($?BLOCK.name()),
 		:scope('lexical'),
 		:viviself('Undef'),
 		:node($/));

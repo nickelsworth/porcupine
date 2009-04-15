@@ -14,11 +14,11 @@ exception.pir -- generates an exception
 .sub '!EXCEPTION'
 	.param string msg
     .local pmc excep
-    excep = new 'Exception'
-	.local pmc aux
-   	aux = new 'String'
-    aux = msg
-    setattribute excep, 'message', aux
+	.local pmc pmsg
+	excep = new 'Exception'
+	pmsg = new 'String'
+	pmsg = msg
+	setattribute excep, 'message', pmsg
     throw excep
 .end
 

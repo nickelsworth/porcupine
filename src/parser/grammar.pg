@@ -94,6 +94,7 @@ rule type_definition {
 rule class_item {
     | <class_proto_procedure> {*} #= class_proto_procedure
     | <class_proto_function> {*} #= class_proto_function
+    | <variable_declaration> {*} #= variable_declaration
 }
 
 rule class_proto_procedure {

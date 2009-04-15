@@ -5,6 +5,7 @@ type
 		procedure ok2;
 		procedure ok3;
 		function ok4;
+        x : integer;
 	end;
 
 var
