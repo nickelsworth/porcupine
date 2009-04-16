@@ -35,7 +35,6 @@ load_parrot:
 load_pascal:
 	compiler = compreg 'porcupine'
     .tailcall compiler.'evalfiles'(realfilename)
-	.return(1)
 .end
 
 .sub '!REGISTERCLASS'
