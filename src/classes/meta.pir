@@ -11,7 +11,7 @@ PorcupineMetaClass - type metaclass class
 	p6mc = get_root_global ['parrot'], 'P6metaclass'
 	p6mc.'new_class'('PorcupineMetaClass')
 	pc = p6mc.'HOW'()
-	set_hll_global ['PorcupineMetaClass'], '!METACLASS', pc
+	set_hll_global ['Porcupine'], '!METACLASS', pc
 .end
 
 #accepts same time
@@ -26,7 +26,7 @@ PorcupineMetaClass - type metaclass class
 #	.param pmc args :slurpy
 #	.param pmc args_named :named :slurpy
 	.local pmc meta
-	meta = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	meta = get_hll_global ['Porcupine'], '!METACLASS'
 	$P0 = meta.'get_parrotclass'(self)
 	$P1 = $P0.'new'()
 	.return($P1)

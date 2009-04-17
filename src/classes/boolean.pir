@@ -8,7 +8,7 @@ PorcupineBoolean - integer class
 
 .sub 'onload' :anon :init :load
 	.local pmc metac,intc
-	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	metac = get_hll_global ['Porcupine'], '!METACLASS'
 	intc = metac.'new_class'('PorcupineBoolean', 'parent'=>'parrot;Boolean PorcupineMetaClass')
 	metac.'register'('Boolean', 'parent'=>intc, 'protoobject'=>intc)
 .end

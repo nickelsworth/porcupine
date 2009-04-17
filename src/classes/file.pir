@@ -9,7 +9,7 @@ PorcupineFile - file class
 
 .sub 'onload' :anon :init :load
 	.local pmc metac,intc, c
-	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	metac = get_hll_global ['Porcupine'], '!METACLASS'
 	intc = metac.'new_class'('PorcupineFile', 'parent'=>'PorcupineMetaClass')
 	c = get_class 'PorcupineFile'
 	addattribute c, 'handle'

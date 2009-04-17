@@ -94,7 +94,7 @@ rule type_definition {
 rule class_item {
     | <class_proto_procedure> {*} #= class_proto_procedure
     | <class_proto_function> {*} #= class_proto_function
-    | <variable_declaration> {*} #= variable_declaration
+    | <class_def_attribute> {*} #= class_def_attribute
 }
 
 rule class_proto_procedure {
@@ -105,6 +105,11 @@ rule class_proto_procedure {
 rule class_proto_function {
     'function'  [ <identifier> || <panic: "Prototype missing identifier">]
     {*}
+}
+
+rule class_def_attribute {
+     <identifier> [',' <identifier>]* [':' <type> | <panic: "Attribute declaration missing type">| ]
+     {*}
 }
 
 rule constant_definition_part {

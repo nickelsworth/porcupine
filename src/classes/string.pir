@@ -8,7 +8,7 @@ PorcupineString -  string class
 
 .sub 'onload' :anon :init :load
 	.local pmc metac,intc
-	metac = get_hll_global ['PorcupineMetaClass'], '!METACLASS'
+	metac = get_hll_global ['Porcupine'], '!METACLASS'
 	intc = metac.'new_class'('PorcupineString', 'parent'=>'parrot;String PorcupineMetaClass')
 	metac.'register'('String', 'parent'=>intc, 'protoobject'=>intc)
 .end

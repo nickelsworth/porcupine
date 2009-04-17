@@ -122,14 +122,21 @@ method type_definition_part($/){
 method type_definition($/){
     my $class := ~$<namespace>;
     $?TYPE{$class} := $class;
-    my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
-    $past.pirflags(':init :load');
-    my $pir := "\t$P0 = get_hll_global ['PorcupineMetaClass'], '!METACLASS'\n" ~
+    $?BLOCK := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
+    $?BLOCK.pirflags(':init :load');
+    my $pir := "\t$P0 = get_hll_global ['Porcupine'], '!METACLASS'\n" ~
                 ~ "\t$P1 = $P0.'new_class'(%0, 'parent'=>'PorcupineMetaClass')";
-    $past.push( PAST::Op.new($class, :inline($pir), :node($/)) );
+    $?BLOCK.push( PAST::Op.new($class, :inline($pir), :node($/)) );
+    @?BLOCK.unshift($?BLOCK);
+    
     for $<class_item> {
-        $past.push($($_));
+        $?BLOCK.push($($_));
     }
+	
+    #remove block from stack 
+    my $past := @?BLOCK.shift();
+    $?BLOCK := @?BLOCK[0];
+
     make $past;
 }
 
@@ -155,6 +162,55 @@ method class_proto_function($/){
     make $past;
 }
 
+method class_def_attribute($/){
+   	my $past := PAST::VarList.new(:node($/));
+	
+	my $type;
+	my $ptype := $<type>{'simple_type'};
+	my $size;
+	my $array := 0;
+	
+	if($<type>{'simple_type'}){
+		$type := $?TYPE{lwcase($ptype)};
+	}
+	elsif($<type>{'array_type'}){
+		$ptype := $<type>{'array_type'}{'simple_type'};
+		$type := $?TYPE{lwcase($ptype)};
+		$size := $<type>{'array_type'}{'size'};
+	}
+	
+	unless $type {
+		$/.panic("Undefined type '" ~ $ptype ~"'");
+	}	
+
+	for $<identifier>{
+		my $var := PAST::Var.new(:name(~$_), :scope('attribute'), :node($/));
+		$var.isdecl(1);
+		$var.viviself($type);
+		
+		#arrays
+		if($<type>{'array_type'}){
+			#look up constructor
+			my $const := $?ARRAY_CONST{lwcase($ptype)};
+			unless $const {
+				$/.panic("Undefined array type '" ~ $ptype ~"'");
+			}
+
+			$var.viviself(PAST::Op.new(
+					$($size), 
+					:name($const), 
+					:pasttype('call'),
+					:node($/)));
+			$array := 1;
+		}
+		
+		$past.push($var);
+        writeln($?BLOCK.namespace());
+		$?BLOCK.symbol(~$_, :scope('attribute'));
+	}
+
+	make $past;
+}
 
 method variable_declaration_part($/){
     my $past := PAST::Stmts.new( :node( $/ ));
@@ -207,7 +263,7 @@ method variable_declaration($/){
 		}
 		
 		$past.push($var);
-		$?BLOCK.symbol(~$_, :array($array), :type($type));
+		$?BLOCK.symbol(~$_, :scope('lexical'));
 	}
 
 	make $past;
@@ -300,7 +356,7 @@ method function_heading($/){
 			:isdecl(1),
 			:node($/) ) );
 
-	$past.symbol($name, :type($type));
+	$past.symbol($name, :scope('lexical') );
     
 	# add block to stack.
     $?BLOCK := $past;
@@ -329,7 +385,7 @@ method value_parameter($/){
 		my $var := $( $_ );
 		my $name := $var.name();
 		$var.scope('parameter');
-		$?BLOCK.symbol($name, :scope('lexical'), :type($type));
+		$?BLOCK.symbol($name, :scope('lexical'));
 		$past.push($var);
 	}
 	make $past;
