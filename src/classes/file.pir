@@ -8,9 +8,9 @@ PorcupineFile - file class
 .include 'cclass.pasm'
 
 .sub 'onload' :anon :init :load
-	.local pmc metac,intc, c
+	.local pmc metac, c
 	metac = get_hll_global ['Porcupine'], '!METACLASS'
-	intc = metac.'new_class'('PorcupineFile', 'parent'=>'PorcupineMetaClass')
+	metac.'new_class'('PorcupineFile', 'parent'=>'PorcupineMetaClass')
 	c = get_class 'PorcupineFile'
 	addattribute c, 'handle'
 	addattribute c, 'path'

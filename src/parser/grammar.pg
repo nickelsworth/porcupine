@@ -83,7 +83,6 @@ rule type_definition_part {
     {*}
 }
 
-# add panic statement
 rule type_definition {
     <namespace> '=' 'class'
     [<class_item> <terminator>]*
@@ -108,7 +107,7 @@ rule class_proto_function {
 }
 
 rule class_def_attribute {
-     <identifier> [',' <identifier>]* [':' <type> | <panic: "Attribute declaration missing type">| ]
+     <identifier> [':' <type> | <panic: "Attribute declaration missing type">| ]
      {*}
 }
 

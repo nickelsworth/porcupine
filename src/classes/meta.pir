@@ -8,6 +8,7 @@ PorcupineMetaClass - type metaclass class
 
 .sub 'onload' :anon :init :load
 	.local pmc p6mc,pc
+	load_bytecode 'P6object.pbc'
 	p6mc = get_root_global ['parrot'], 'P6metaclass'
 	p6mc.'new_class'('PorcupineMetaClass')
 	pc = p6mc.'HOW'()
@@ -19,6 +20,12 @@ PorcupineMetaClass - type metaclass class
 .sub '!ACCEPTS' :method
 	.param pmc topic
 	.tailcall 'infix:=='(self, topic)
+.end
+
+.sub '!ADDATTRIBUTE' :method
+	.param pmc class
+	.param string attr
+	addattribute class, attr
 .end
 
 #constructor borrowed from cardinal

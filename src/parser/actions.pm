@@ -164,48 +164,23 @@ method class_proto_function($/){
 
 method class_def_attribute($/){
    	my $past := PAST::VarList.new(:node($/));
+
+    my $type := $?TYPE{lwcase(~$<type>{'simple_type'})};
 	
-	my $type;
-	my $ptype := $<type>{'simple_type'};
-	my $size;
-	my $array := 0;
-	
-	if($<type>{'simple_type'}){
-		$type := $?TYPE{lwcase($ptype)};
-	}
-	elsif($<type>{'array_type'}){
-		$ptype := $<type>{'array_type'}{'simple_type'};
-		$type := $?TYPE{lwcase($ptype)};
-		$size := $<type>{'array_type'}{'size'};
+    if($<type>{'array_type'}){
+        $/.panic("Arrays as attributes have not been implemented!");
 	}
 	
 	unless $type {
-		$/.panic("Undefined type '" ~ $ptype ~"'");
+		$/.panic("Undefined type!");
 	}	
 
 	for $<identifier>{
-		my $var := PAST::Var.new(:name(~$_), :scope('attribute'), :node($/));
-		$var.isdecl(1);
+        #FIXME
+		my $var := PAST::Op.new(:name($_), :scope('attribute'), :node($/));
 		$var.viviself($type);
 		
-		#arrays
-		if($<type>{'array_type'}){
-			#look up constructor
-			my $const := $?ARRAY_CONST{lwcase($ptype)};
-			unless $const {
-				$/.panic("Undefined array type '" ~ $ptype ~"'");
-			}
-
-			$var.viviself(PAST::Op.new(
-					$($size), 
-					:name($const), 
-					:pasttype('call'),
-					:node($/)));
-			$array := 1;
-		}
-		
 		$past.push($var);
-        writeln($?BLOCK.namespace());
 		$?BLOCK.symbol(~$_, :scope('attribute'));
 	}
 
@@ -557,18 +532,8 @@ method entire_variable($/) {
 }
 
 method array_variable($/) {
-	#lookup type
-	my $v := $?BLOCK.symbol(~$<identifier>);
-	unless $v {
-		for @?BLOCK {
-			$v := $_.symbol(~$<identifier>);
-		}
-	}
-
 	my $array := PAST::Var.new(
-		:vivibase('FixedIntegerArray'), 
 		:scope('keyed'),  :node($/));
-	$array.lvalue(1);
 	$array.push(PAST::Var.new(:name(~$<identifier>), :scope('lexical'),:node($/)));
 	
 	#so assignment method can lookup type.
