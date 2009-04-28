@@ -169,7 +169,7 @@ rule formal_parameter_section {
 }
 
 rule value_parameter {
-     <variable> [',' <variable>]? [':' <type>| <panic: 'Parameter missing type'>]
+     <variable> [',' <variable>]* [':' <type>| <panic: 'Parameter missing type'>]
      {*}
 }
 

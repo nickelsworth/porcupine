@@ -122,20 +122,15 @@ method type_definition_part($/){
 method type_definition($/){
     my $class := ~$<namespace>;
     $?TYPE{$class} := $class;
-    $?BLOCK := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
-    $?BLOCK.pirflags(':init :load');
+    my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
+    $past.pirflags(':init :load');
     my $pir := "\t$P0 = get_hll_global ['Porcupine'], '!METACLASS'\n" ~
                 ~ "\t$P1 = $P0.'new_class'(%0, 'parent'=>'PorcupineMetaClass')";
-    $?BLOCK.push( PAST::Op.new($class, :inline($pir), :node($/)) );
-    @?BLOCK.unshift($?BLOCK);
+    $past.push( PAST::Op.new($class, :inline($pir), :node($/)) );
     
     for $<class_item> {
-        $?BLOCK.push($($_));
+        $past.push($($_));
     }
-	
-    #remove block from stack 
-    my $past := @?BLOCK.shift();
-    $?BLOCK := @?BLOCK[0];
 
     make $past;
 }
