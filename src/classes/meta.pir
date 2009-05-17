@@ -22,12 +22,6 @@ PorcupineMetaClass - type metaclass class
 	.tailcall 'infix:=='(self, topic)
 .end
 
-.sub '!ADDATTRIBUTE' :method
-	.param pmc class
-	.param string attr
-	addattribute class, attr
-.end
-
 #constructor borrowed from cardinal
 .sub 'create' :method
 #	.param pmc args :slurpy

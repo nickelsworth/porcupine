@@ -5,7 +5,7 @@ type
 		procedure ok2;
 		procedure ok3;
 		function ok4;
-//		x :integer;
+		x :integer;
 	end;
 
 var
@@ -24,10 +24,16 @@ end;
 function testclass.ok4 : integer;
 begin
 	writeln('ok 4');
+	x = 6;
+end;
+
+function testclass.sayx :integer;
+begin
+	writeln('ok ', x);
 end;
 
 begin
-	writeln('1..5');
+	writeln('1..6');
 
 	try
 		testclass.n2(); 
@@ -41,6 +47,6 @@ begin
 	test := testclass.create();
 	test.ok4();
 	writeln('ok 5');
-
+	test.sayx();
 end.
 

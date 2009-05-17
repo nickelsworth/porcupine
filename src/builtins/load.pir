@@ -37,13 +37,18 @@ load_pascal:
     .tailcall compiler.'evalfiles'(realfilename)
 .end
 
-.sub '!REGISTERCLASS'
+
+.sub '!NEWCLASS'
 	.param string name
-	.local pmc metaclass
-	.local pmc c
-	 metaclass = get_root_global ['parrot'], 'P6metaclass'
-	 c = metaclass.'new_class'(name, 'parent'=>'parrot;Integer')
-	 metaclass.'register'(name)
+	.local pmc class
+	class = newclass name
+	.return(class)
+.end
+
+.sub '!ADDATTRIBUTE'
+	.param pmc class
+	.param string attr
+	addattribute class, attr
 .end
 
 

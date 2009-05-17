@@ -17,6 +17,9 @@ value of the comment is passed as the second argument to the method.
 class Porcupine::Grammar::Actions;
 our $?BLOCK;
 our @?BLOCK;
+our @?CLASS;
+our $?CLASS_BLOCK;
+our $?NAMESPACE;
 our $?CONSTANT;
 our $?TYPE;
 our $?ARRAY_CONST;
@@ -54,7 +57,9 @@ method TOP($/, $key) {
 		elsif $<unit_heading>{
 			$past.push($($<unit_block>));
 		}
-
+        for @?CLASS {
+            $past.unshift($?CLASS_BLOCK{$_});
+        }
 		make $past;
 	}
 }
@@ -87,10 +92,23 @@ method declaration_part($/){
 		$past.push($use);
 	}
 	for $<procedure_declaration> {
-		$past.push($($_));
+        #if has namespace add to class block.
+   		my $p := $($_);
+        if($p.namespace()){
+            $?CLASS_BLOCK{$p.namespace()}.push($p);
+        }
+        else {
+            $past.push($p);
+        }
 	}
     for $<function_declaration> {
-		$past.push($($_));
+		my $p := $($_);
+        if($p.namespace()){
+            $?CLASS_BLOCK{$p.namespace()}.push($p);
+        }
+        else {
+            $past.push($p);
+        }
 	}
 	make $past;
 }
@@ -119,67 +137,110 @@ method type_definition_part($/){
     make $past;
 }
 
-method type_definition($/){
-    my $class := ~$<namespace>;
-    $?TYPE{$class} := $class;
-    my $past := PAST::Block.new(:blocktype('declaration'), :namespace($class), :node($/));
-    $past.pirflags(':init :load');
-    my $pir := "\t$P0 = get_hll_global ['Porcupine'], '!METACLASS'\n" ~
-                ~ "\t$P1 = $P0.'new_class'(%0, 'parent'=>'PorcupineMetaClass')";
-    $past.push( PAST::Op.new($class, :inline($pir), :node($/)) );
-    
-    for $<class_item> {
-        $past.push($($_));
-    }
 
-    make $past;
+method type_definition($/, $key){
+    if($key eq 'open') {
+        $?NAMESPACE := ~$<namespace>;
+        $?TYPE{$?NAMESPACE} := $?NAMESPACE;
+        @?CLASS[0] := $?NAMESPACE;
+        
+        #create class block
+        $?CLASS_BLOCK{$?NAMESPACE} :=  
+        PAST::Block.new(:pirflags(":init :load"), 
+            :blocktype('declaration'), :namespace($?NAMESPACE));
+
+    }
+    else {
+		my $past := PAST::Block.new( :blocktype('declaration'), :node($/) );
+        $past.pirflags(':init :load');
+        
+        my $v := PAST::Var.new(:name('!CLASS'), :scope('lexical'));
+        $v.isdecl(1);
+        $past.push($v);
+
+        #create new class
+        my $nc := PAST::Op.new(
+                :pasttype('bind'),
+                PAST::Var.new(
+                    :name('!CLASS'),
+                    :scope('lexical'),
+                ),
+                PAST::Op.new(
+                    :pasttype('call'),
+                    :name('!NEWCLASS'),
+                    PAST::Val.new( :value($?NAMESPACE))
+                )
+            );
+        $past.push($nc);
+
+        #add attr and methods
+        for $<class_item> {
+            my $item := $($_); 
+
+            if($item{'name'}){ #is method proto
+                $?CLASS_BLOCK{$?NAMESPACE}.push($item);
+            }
+            else { #is attr
+                $past.push($item);
+            }
+        }
+            
+        #register class as subclass of Porcmeta
+        my $reg := PAST::Op.new(
+            :pasttype('callmethod'),
+            :name('register'),
+            PAST::Var.new(
+                :scope('package'),
+                :name('!METACLASS'),
+                :namespace('Porcupine')
+            ),
+            PAST::Var.new(
+                :scope('lexical'),
+                :name('!CLASS')
+            ),
+            PAST::Val.new(
+                :value('PorcupineMetaClass'),
+                :named( PAST::Val.new( :value('parent') ) )
+            )
+        );
+        $past.push($reg);
+
+       
+        $?NAMESPACE := '';
+        make $past;
+    }
 }
 
 method class_item($/, $key){
     make $($/{$key});
 }
 
-method class_proto_procedure($/){
+method class_def_method($/){
     my $name := ~$<identifier>;
-    my $past := PAST::Block.new(:name($name), :blocktype('method'), :node($/));
-    my $msg := "procedure ("~ $name ~ ") has only been prototyped!";
-	$past.push(PAST::Op.new( $msg, :inline("\t'!EXCEPTION'(%0)"), :node($/) ));
-    $past.control('return_pir');
-    make $past;
-}
-
-method class_proto_function($/){
-    my $name := ~$<identifier>;
-    my $past := PAST::Block.new(:name($name), :blocktype('method'), :node($/));
-    my $msg := "function ("~ $name ~ ") has only been prototyped!";
+    my $past := PAST::Block.new(:name($name), :blocktype('method'), :namespace($?NAMESPACE), :node($/));
+    my $msg := "method ("~ $name ~ ") has only been prototyped!";
 	$past.push(PAST::Op.new( $msg, :inline("\t'!EXCEPTION'(%0)"), :node($/) ));
     $past.control('return_pir');
     make $past;
 }
 
 method class_def_attribute($/){
-   	my $past := PAST::VarList.new(:node($/));
-
-    my $type := $?TYPE{lwcase(~$<type>{'simple_type'})};
-	
+    my $type := $?TYPE{lwcase(~$<type>{'simple_type'})};	
     if($<type>{'array_type'}){
         $/.panic("Arrays as attributes have not been implemented!");
 	}
-	
-	unless $type {
+ 
+    unless $type {
 		$/.panic("Undefined type!");
-	}	
-
-	for $<identifier>{
-        #FIXME
-		my $var := PAST::Op.new(:name($_), :scope('attribute'), :node($/));
-		$var.viviself($type);
-		
-		$past.push($var);
-		$?BLOCK.symbol(~$_, :scope('attribute'));
 	}
 
-	make $past;
+    my $stmt := PAST::Stmts.new(:node($/));
+
+    my $atr := PAST::Op.new(:name('!ADDATTRIBUTE'), :pasttype('call'), :node( $/ ) );
+    $atr.push(PAST::Var.new(:name('!CLASS'), :scope('lexical')));
+    $atr.push(PAST::Val.new(:value(~$<identifier>)));
+    $stmt.push($atr);
+	make $stmt;
 }
 
 method variable_declaration_part($/){
@@ -248,22 +309,24 @@ method procedure_declaration($/){
     @?BLOCK.shift();
     $?BLOCK := @?BLOCK[0];
 
+    $?NAMESPACE := ''; # leave namespace
+
     make $past;
 }
 
 method procedure_heading($/){
     my $name :=  ~$<identifier>;
     my $blk := 'declaration';
-    my $ns;
+
     if $<namespace>[0] {
         $blk := 'method';
-        $ns := ~$<namespace>[0];
+        $?NAMESPACE := ~$<namespace>[0];
     }
 
-    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($ns), :node($/));
+    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($?NAMESPACE),:node($/));
     $past.symbol_defaults( :scope('lexical') );
 
-    if $<formal_parameter_list>{
+    if $<formal_parameter_list> {
         $past.push($( $<formal_parameter_list>[0] ) );
     }
 
@@ -290,6 +353,9 @@ method function_declaration($/){
 
 	$past.push( PAST::Op.new( $var, :pasttype('return'), :node($/)));
     $past.control('return_pir');
+
+    $?NAMESPACE := ''; # leave namespace
+
     make $past;
 }
 
@@ -297,15 +363,14 @@ method function_heading($/){
     my $name :=  ~$<identifier>;
     
     my $blk := 'declaration';
-    my $ns;
     if $<namespace>[0] {
         $blk := 'method';
-        $ns := ~$<namespace>[0];
+        $?NAMESPACE := ~$<namespace>[0];
         #load namespace block onto stack.
 
     }
 
-    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($ns), :node($/));
+    my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($?NAMESPACE), :node($/));
 
     my $ptype := ~$<type>;
     $past.symbol_defaults( :scope('lexical') );
@@ -381,14 +446,17 @@ method compound_statement($/){
 	make $past;
 }
 
-#hack!
-method array_assignment($/){
-    my $lval := $($<array_variable>);
+method assignment($/){
+    my $lval := $($<variable>);
+    my $past;
 
-    my $past := PAST::Op.new(
-	:pasttype('bind'),
-	:node($/)
-    );
+    #bind used for attributes and scopes
+    if($lval.scope() eq 'attribute' or 'keyed' eq $lval.scope()){
+        $past := PAST::Op.new( :pasttype('bind'),:node($/));
+    }
+    else {
+        $past := PAST::Op.new( :name('infix::='), :pasttype('call'),:node($/));
+    }
    
     $lval.lvalue(1);
     $past.push($lval);
@@ -517,11 +585,23 @@ method variable($/, $key) {
 
 method entire_variable($/) {
 	my $name  := ~$<identifier>;
+    my $scope := 'lexical';
 	if $?CONSTANT{$name} {
 		make $( $?CONSTANT{$name});
 	}else{
+        my $sym;
+
+        for @?BLOCK {
+            $sym := $_.symbol($name);
+        }
+        
+        if($?NAMESPACE and !$sym){
+            $scope := 'attribute';
+        }
+
 		make PAST::Var.new( :name($name),
-			:scope('lexical'),
+            :viviself('PorcupineInteger'),
+			:scope($scope),
 			:node($/) );
 	}
 }
@@ -545,7 +625,8 @@ method repeat_statement($/, $key){
         $?BLOCK := PAST::Block.new( :blocktype('immediate'), :hll('Porcupine') ,:node($/) );
         @?BLOCK.unshift($?BLOCK);
 	}else{ 
-		my $loop_block := @?BLOCK.shift();
+	    my $loop_block := @?BLOCK.shift(); #get block created by assignment
+	    $?BLOCK :=  @?BLOCK[0]; #set current block to top of stack.
         for $<statement>{
             $loop_block.push( $( $_ ) );
         }

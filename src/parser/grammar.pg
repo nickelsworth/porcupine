@@ -85,24 +85,20 @@ rule type_definition_part {
 
 rule type_definition {
     <namespace> '=' 'class'
+    {*} #= open
     [<class_item> <terminator>]*
     'end'
-    {*}
+    {*} #= close
 }
 
+
 rule class_item {
-    | <class_proto_procedure> {*} #= class_proto_procedure
-    | <class_proto_function> {*} #= class_proto_function
+    | <class_def_method> {*} #= class_def_method
     | <class_def_attribute> {*} #= class_def_attribute
 }
 
-rule class_proto_procedure {
-    'procedure' [ <identifier> || <panic: "Prototype missing identifier">]
-    {*}
-}
-
-rule class_proto_function {
-    'function'  [ <identifier> || <panic: "Prototype missing identifier">]
+rule class_def_method {
+    ['procedure' | 'function' | 'method'] [ <identifier> || <panic: "Prototype missing identifier">]
     {*}
 }
 
@@ -182,7 +178,7 @@ rule statement_part {
 
 rule statement {
     | <compound_statement> {*} #= compound_statement
-    | <array_assignment> {*} #= array_assignment
+    | <assignment> {*} #= assignment
     | <procedure_statement> {*} #= procedure_statement
     | <method_statement> {*} #= method_statement
     | <if_statement> {*} #= if_statement
@@ -203,8 +199,8 @@ rule compound_statement {
     {*}
 }
 
-rule array_assignment {
-    <array_variable> ':=' <expression>
+rule assignment {
+    <variable> ':=' <expression>
    {*}
 }
 
