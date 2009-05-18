@@ -7,8 +7,13 @@
 .sub 'infix::='
 	.param pmc lval
 	.param pmc rval
+	$I1 = defined lval
+	unless $I1 goto error
+	$I0 = 'infix:=='(lval,rval)
+	if $I0 goto do_assign
 	$I0 = lval.'!ACCEPTS'(rval)
 	if $I0 goto do_assign
+error:
 	'!EXCEPTION'("Type mismatch in assignment!")
 do_assign:
 	eq_addr lval, rval, assign_done

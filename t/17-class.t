@@ -21,15 +21,15 @@ begin
 	writeln('ok 3');
 end;
 
+procedure testclass.sayx;
+begin
+	writeln('ok ', x);
+end;
+
 function testclass.ok4 : integer;
 begin
 	writeln('ok 4');
-	x = 6;
-end;
-
-function testclass.sayx :integer;
-begin
-	writeln('ok ', x);
+	x := 6;
 end;
 
 begin

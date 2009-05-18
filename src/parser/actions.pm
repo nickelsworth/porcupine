@@ -38,7 +38,7 @@ $?TYPE{'string'} := 'PorcupineString';
 $?TYPE{'boolean'} := 'PorcupineBoolean';
 $?TYPE{'text'} := 'PorcupineFile';
 $?TYPE{'data'} := 'PorcupineFile';
-$?TYPE{'pointer'} := 'Pointer';
+$?TYPE{'socket'} := 'Socket';
 
 
 method TOP($/, $key) {
@@ -137,8 +137,17 @@ method type_definition_part($/){
     make $past;
 }
 
-
 method type_definition($/, $key){
+    make $($/{$key});
+}
+
+method type_basic_definition($/){
+    my $ntype := ~$<identifier>;
+    $?TYPE{$ntype} := $ntype;
+    make PAST::Stmts.new(:node($/));
+}
+
+method type_class_definition($/, $key){
     if($key eq 'open') {
         $?NAMESPACE := ~$<namespace>;
         $?TYPE{$?NAMESPACE} := $?NAMESPACE;
@@ -260,7 +269,7 @@ method variable_declaration($/){
 	my $array := 0;
 	
 	if($<type>{'simple_type'}){
-		$type := $?TYPE{lwcase($ptype)};
+		$type := $?TYPE{$ptype};
 	}
 	elsif($<type>{'array_type'}){
 		$ptype := $<type>{'array_type'}{'simple_type'};
@@ -446,12 +455,12 @@ method compound_statement($/){
 	make $past;
 }
 
-method assignment($/){
+method assignment($/, $key){
     my $lval := $($<variable>);
     my $past;
 
     #bind used for attributes and scopes
-    if($lval.scope() eq 'attribute' or 'keyed' eq $lval.scope()){
+    if($key eq 'lazy' or $lval.scope() eq 'attribute' or 'keyed' eq $lval.scope()){
         $past := PAST::Op.new( :pasttype('bind'),:node($/));
     }
     else {
@@ -484,6 +493,7 @@ method method_statement($/){
     my $ns;
     my $owner;
 
+    #if called on a object set object as method owner
     if $<variable> {
         for @?BLOCK {
             if $_.symbol(~$<variable>) {
@@ -495,6 +505,7 @@ method method_statement($/){
         }
     }
     
+    #else is namespace
     unless $owner {
         if $<variable> {
             $ns := ~$<variable>;
@@ -600,7 +611,7 @@ method entire_variable($/) {
         }
 
 		make PAST::Var.new( :name($name),
-            :viviself('PorcupineInteger'),
+            # :viviself('PorcupineInteger'),
 			:scope($scope),
 			:node($/) );
 	}

@@ -84,6 +84,11 @@ rule type_definition_part {
 }
 
 rule type_definition {
+    | <type_class_definition> {*} #= type_class_definition
+    | <type_basic_definition> {*} #= type_basic_definition
+}
+
+rule type_class_definition {
     <namespace> '=' 'class'
     {*} #= open
     [<class_item> <terminator>]*
@@ -91,6 +96,10 @@ rule type_definition {
     {*} #= close
 }
 
+rule type_basic_definition {
+    <identifier> '=' 'object'
+    {*}
+}
 
 rule class_item {
     | <class_def_method> {*} #= class_def_method
@@ -200,8 +209,8 @@ rule compound_statement {
 }
 
 rule assignment {
-    <variable> ':=' <expression>
-   {*}
+    | <variable> ':=' <expression> {*} #= typical
+    | <variable> ':=:' <expression> {*} #= lazy
 }
 
 rule procedure_statement {

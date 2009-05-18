@@ -49,7 +49,7 @@ BUILTINS_PIR = \
   src/builtins/readln.pir \
   src/builtins/operators.pir \
   src/builtins/exception.pir \
-  src/builtins/case.pir \
+  src/builtins/std.pir \
   src/builtins/io.pir \
   src/builtins/load.pir \
   src/builtins/array.pir \
