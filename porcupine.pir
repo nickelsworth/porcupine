@@ -29,6 +29,7 @@ object.
 
 .sub '' :anon :load :init
     load_bytecode 'PCT.pbc'
+	load_bytecode "Data/Dumper.pbc"
     .local pmc parrotns, hllns, exports
     parrotns = get_root_namespace ['parrot']
     hllns = get_hll_namespace

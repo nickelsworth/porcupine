@@ -1,6 +1,10 @@
 unit TapTest;
+uses
+	Logger;
 type
 	TapTest = class
+		procedure log_result;
+		procedure log_to;
 		procedure plan;
 		procedure cmp;
 		procedure ok;
@@ -9,9 +13,16 @@ type
 
 var
    current_test : integer;
-   log_handle : text;
+   log : Logger;
 
-procedure log(res : integer; desc: string);
+procedure TapTest.log_to(filename :string);
+begin
+	log := Logger.create();
+	log.path(filename);
+	log.msg('log started');
+end;
+
+procedure TapTest.log_result(res : integer; desc: string);
 var
 	res_str : string;
 begin
@@ -23,36 +34,28 @@ begin
 		res_str:= 'fail ';
 	
 	writeln(res_str,current_test, ' # ',desc);
-	if log_handle then
-		writeln(log_handle, res_str, current_test, ' # ', desc);
-end;
-
-procedure TapTest.recordto(filename : string);
-begin
-	log_handle := assign(filename, 'a');
-	writeln(log_handle,'Log started!');
+	log.msg(res_str, current_test, ' # ', desc);
 end;
 
 procedure TapTest.plan(tests: integer);
 begin
 	writeln(1,'..',tests);
-	if log_handle then
-		writeln(log_handle,1,'..',tests);
+	log.msg(concat(1,'..',tests));
 end;
 
 procedure TapTest.cmp(res1, res2: integer; desc :string);
 begin
-		log((res1 = res2), desc);
+		TapTest.log_result((res1 = res2), desc);
 end;
 
 procedure TapTest.ok(res :integer; desc :string);
 begin
-		log(res,desc);
+		TapTest.log_result(res,desc);
 end;
 
 procedure TapTest.nok(res :integer; desc :string);
 begin
-		log((not res), desc);
+		TapTest.log_result((not res), desc);
 end;
 
 

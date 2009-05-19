@@ -83,13 +83,14 @@ method declaration_part($/){
 		my $type := $($<type_definition_part>[0]);
 		$past.push($type);
 	}
-	if $<variable_declaration_part>[0]{
-		my $var := $($<variable_declaration_part>[0]);
-		$past.push($var);
-	}
 	if $<use_declaration_part>[0]{
 		my $use := $($<use_declaration_part>[0]);
 		$past.push($use);
+	}
+
+	if $<variable_declaration_part>[0]{
+		my $var := $($<variable_declaration_part>[0]);
+		$past.push($var);
 	}
 	for $<procedure_declaration> {
         #if has namespace add to class block.
@@ -119,8 +120,8 @@ method use_declaration_part($/) {
 		my $mod := PAST::Val.new(:value(~$_), :returns('String'), :node($/));
 		my $load := PAST::Op.new(:name('!LOADMODULE'), :pasttype('call'), :node($/)); 
 		$load.push($mod);
-		$past.push($load);
-	}
+		$past.push($load);        
+    }
 	make $past;
 }
 
@@ -139,12 +140,6 @@ method type_definition_part($/){
 
 method type_definition($/, $key){
     make $($/{$key});
-}
-
-method type_basic_definition($/){
-    my $ntype := ~$<identifier>;
-    $?TYPE{$ntype} := $ntype;
-    make PAST::Stmts.new(:node($/));
 }
 
 method type_class_definition($/, $key){
@@ -180,7 +175,10 @@ method type_class_definition($/, $key){
                     PAST::Val.new( :value($?NAMESPACE))
                 )
             );
+
         $past.push($nc);
+
+
 
         #add attr and methods
         for $<class_item> {
@@ -214,7 +212,6 @@ method type_class_definition($/, $key){
         );
         $past.push($reg);
 
-       
         $?NAMESPACE := '';
         make $past;
     }
@@ -240,7 +237,8 @@ method class_def_attribute($/){
 	}
  
     unless $type {
-		$/.panic("Undefined type!");
+        #$/.panic("Undefined type!");
+        $type := ~$<type>{'simple_type'};
 	}
 
     my $stmt := PAST::Stmts.new(:node($/));
@@ -278,7 +276,8 @@ method variable_declaration($/){
 	}
 	
 	unless $type {
-		$/.panic("Undefined type '" ~ $ptype ~"'");
+        $type := ~$ptype;
+        # $/.panic("Undefined type '" ~ $ptype ~"'");
 	}	
 
 	for $<identifier>{
@@ -380,6 +379,7 @@ method function_heading($/){
     }
 
     my $past := PAST::Block.new(:name($name), :blocktype($blk), :namespace($?NAMESPACE), :node($/));
+	$past.symbol($name, :scope('lexical') );
 
     my $ptype := ~$<type>;
     $past.symbol_defaults( :scope('lexical') );
@@ -400,11 +400,11 @@ method function_heading($/){
 			:isdecl(1),
 			:node($/) ) );
 
-	$past.symbol($name, :scope('lexical') );
     
 	# add block to stack.
     $?BLOCK := $past;
     @?BLOCK.unshift($past);
+
 
 	make $past;
 }

@@ -2,7 +2,7 @@ program testcase;
 var
 	s1, s2 :string;
 begin
-	writeln('1..6');
+	writeln('1..7');
 	s1 := 'OK 1';
 	s2 := lwcase(s1);
 	writeln(s2);
@@ -20,5 +20,5 @@ begin
 	
 	if chomp(localtime()) then
 		writeln('ok 6');
-		
+	writeln(concat('ok',' ',7));		
 end.

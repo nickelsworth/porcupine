@@ -7,6 +7,14 @@ standard and some slightly less standard functions
 .namespace []
 .include "tm.pasm"
 
+.sub 'dumper'
+	.param pmc var
+	.param string label 
+	.local pmc dumper
+	dumper = new 'Data::Dumper'
+	dumper.'dumper'( var, label )
+.end
+
 .sub 'upcase'
 	.param string in
 	upcase in
@@ -70,6 +78,20 @@ ret:
 	.return(str)
 .end
 
+.sub 'concat'
+	.param pmc args :slurpy
+	.local string r
+	.local pmc it
+	it = new 'Iterator', args
+  iter_loop:
+	unless it goto iter_end
+	$S0 = shift it
+	r = concat r, $S0
+    goto iter_loop
+  iter_end:
+	.return(r)
+.end
+
 .sub 'time'
 	time $I0
 	.return($I0)
@@ -83,6 +105,34 @@ tcall:
 	$S0 = localtime i
 	chopn $S0, 1
 	.return($S0)
+.end
+
+.sub 'split'
+	.param string objst
+    .param string delim
+    .local pmc pieces
+    .local pmc tmps
+    .local pmc retv
+    .local int len
+    .local int i
+
+	retv = new 'ResizablePMCArray'
+
+    split pieces, delim, objst
+
+    len = pieces
+    i = 0
+  loop:
+    if i == len goto done
+
+	tmps = new 'PorcupineString'
+    tmps = pieces[i]
+	retv.'push'(tmps)
+
+    inc i
+    goto loop
+  done:
+    .return(retv)
 .end
 
 # Local Variables:

@@ -85,7 +85,6 @@ rule type_definition_part {
 
 rule type_definition {
     | <type_class_definition> {*} #= type_class_definition
-    | <type_basic_definition> {*} #= type_basic_definition
 }
 
 rule type_class_definition {
