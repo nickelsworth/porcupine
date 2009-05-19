@@ -4,8 +4,6 @@
 
 readln.pir -- reads a line from stdin, returns a string
 
-TODO: use substr to remove newline from input.
-
 =cut
 
 .include 'cclass.pasm'
@@ -15,7 +13,6 @@ TODO: use substr to remove newline from input.
 .sub 'readln'
 	.param pmc file :optional
 	.local pmc fh
-	.local pmc line
 	$I0 = defined file
 	unless $I0, use_stdin
 	fh = getattribute file, 'handle'
@@ -23,9 +20,9 @@ TODO: use substr to remove newline from input.
 use_stdin:
    	fh = getstdin
 read_line:
-	line = new "PorcupineString"
-   	line = fh.'readline'()
-	.return(line)	
+   	$S0 = fh.'readline'()
+	chopn $S0, 1
+	.return($S0)	
 .end
 
 

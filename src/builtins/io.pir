@@ -25,6 +25,12 @@ assigns file to a filehandle object
 	fh.'close'()
 .end
 
+.sub 'exists'
+	.param string file
+	$I1 = stat file, 0
+	.return($I1)
+.end
+
 # Local Variables:
 #   mode: pir
 #   fill-column: 100

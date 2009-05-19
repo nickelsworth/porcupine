@@ -2,7 +2,7 @@ program io;
 var
 	fh : text;
 begin
-	writeln('1..7');
+	writeln('1..9');
 
 	fh := assign('test.txt', 'w');
 	writeln(fh, 'ok 2');
@@ -20,4 +20,9 @@ begin
 	writeln('ok 6');
 	close(fh);
 	writeln('ok 7');
+	if exists('test.txt') then
+		writeln('ok 8');
+	
+	if not exists('foobar') then
+		writeln('ok 9');
 end.
