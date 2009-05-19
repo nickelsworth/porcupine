@@ -599,19 +599,26 @@ method entire_variable($/) {
     my $scope := 'lexical';
 	if $?CONSTANT{$name} {
 		make $( $?CONSTANT{$name});
-	}else{
-        my $sym;
+	}
+	else {
+        my $sym := $?BLOCK.symbol($name);
 
-        for @?BLOCK {
-            $sym := $_.symbol($name);
+        unless $sym {
+            for @?BLOCK {
+                $sym := $_.symbol($name);
+                if $sym {
+                    make PAST::Var.new( :name($name),
+                        :scope($scope),
+                        :node($/) );
+                }
+            }
         }
-        
+
         if($?NAMESPACE and !$sym){
             $scope := 'attribute';
         }
 
 		make PAST::Var.new( :name($name),
-            # :viviself('PorcupineInteger'),
 			:scope($scope),
 			:node($/) );
 	}

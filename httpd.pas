@@ -1,6 +1,7 @@
 program Listner;
 uses
 	Logger;
+	RequestHandler;
 const
 	PIO_PF_INET = 2;
 	PIO_SOCK_STREAM = 1;
@@ -11,15 +12,6 @@ var
 	hostname : string;
 	request : string;
 	log : Logger;
-
-procedure RequestHandler(req: string);
-var 
-	tokens : array[0..3] of string;
-begin
-	req := chomp(req);
-	tokens :=: split(req, ' ');
-	log.msg(concat('page "',tokens[1],'" requested'));
-end;
 
 begin
 	listener.socket(PIO_PF_INET, PIO_SOCK_STREAM, PIO_PROTO_TCP);
@@ -45,7 +37,7 @@ begin
 			log.msg('new session');
 			
 			request := session.recv();
-			RequestHandler(request);
+			RequestHandler.process(log, request);
 
 			session.close();
 			log.msg('session closed');
