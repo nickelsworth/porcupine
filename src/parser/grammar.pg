@@ -260,7 +260,7 @@ rule repeat_statement {
 }
 
 token exit_statement {
-    'exit' {*}
+    'exit'['(' ')' <panic: "remove '()' following exit statement.">]? {*}
 }
 
 rule raise_statement {

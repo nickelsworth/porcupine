@@ -1,8 +1,9 @@
 program testcase;
 var
 	s1, s2 :string;
+	s0 : integer;
 begin
-	writeln('1..7');
+	writeln('1..8');
 	s1 := 'OK 1';
 	s2 := lwcase(s1);
 	writeln(s2);
@@ -20,5 +21,8 @@ begin
 	
 	if chomp(localtime()) then
 		writeln('ok 6');
-	writeln(concat('ok',' ',7));		
+	writeln(concat('ok',' ',7));
+
+	if nl() = nl() then
+		writeln('ok 8');
 end.

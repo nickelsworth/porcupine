@@ -9,8 +9,7 @@ const
 var
 	sock, session, listener : socket;
 	port : integer;
-	hostname : string;
-	request : string;
+	hostname, request, responce : string;
 	log : Logger;
 
 begin
@@ -34,12 +33,12 @@ begin
 	writeln('main loop');
 	while session := listener.accept() do
 		begin
-			log.msg('new session');
+			log.debug('new session');
 			
 			request := session.recv();
-			RequestHandler.process(log, request);
-
+			responce := RequestHandler.process(log, request);
+			session.send(responce);
 			session.close();
-			log.msg('session closed');
+			log.debug('session closed');
 		end;
 end.

@@ -31,6 +31,11 @@ standard and some slightly less standard functions
 	.return($P0)
 .end
 
+.sub 'nl'
+	$S0 = "\n"
+	.return($S0)
+.end
+
 .sub 'sprintf'
 	.param pmc fmt
 	.param pmc args     :slurpy
@@ -97,6 +102,7 @@ ret:
 	.return($I0)
 .end
 
+
 .sub 'localtime'
 	.param int i :optional
 	if i goto tcall
@@ -109,30 +115,30 @@ tcall:
 
 .sub 'split'
 	.param string objst
-    .param string delim
-    .local pmc pieces
-    .local pmc tmps
-    .local pmc retv
-    .local int len
-    .local int i
+	.param string delim
+	.local pmc pieces
+	.local pmc tmps
+	.local pmc retv
+	.local int len
+	.local int i
 
 	retv = new 'ResizablePMCArray'
 
-    split pieces, delim, objst
+	split pieces, delim, objst
 
-    len = pieces
-    i = 0
-  loop:
-    if i == len goto done
+	len = pieces
+	i = 0
+loop:
+	if i == len goto done
 
 	tmps = new 'PorcupineString'
-    tmps = pieces[i]
+	tmps = pieces[i]
 	retv.'push'(tmps)
 
-    inc i
-    goto loop
-  done:
-    .return(retv)
+	inc i
+	goto loop
+done:
+	.return(retv)
 .end
 
 # Local Variables:
