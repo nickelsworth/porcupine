@@ -20,25 +20,26 @@ begin
 	log := Logger.create();
 	log.path('httpd.log');
 
-	writeln('server started');
 
 	sock :=: listener.sockaddr(hostname, port);
-	listener.bind(sock);	
-	listener.listen(1);
-	
+	listener.bind(sock);
+	writeln('server started');
+	listener.listen(1);	
 
 	if listener then
 		log.msg(concat('listening on ', hostname, ':', port));
 	
-	writeln('main loop');
 	while session := listener.accept() do
 		begin
 			log.debug('new session');
-			
-			request := session.recv();
-			responce := RequestHandler.process(log, request);
-			session.send(responce);
-			session.close();
-			log.debug('session closed');
+			try	
+				request := session.recv();
+				responce := RequestHandler.process(log, request);
+				session.send(responce);
+				session.close();
+				log.debug('session closed');
+			finally
+				log.error(concat('error occured handling request: ',nl(), exception));
+			end;
 		end;
 end.

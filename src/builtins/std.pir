@@ -36,6 +36,10 @@ standard and some slightly less standard functions
 	.return($S0)
 .end
 
+.sub 'halt'
+	end
+.end
+
 .sub 'sprintf'
 	.param pmc fmt
 	.param pmc args     :slurpy
