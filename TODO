@@ -1,10 +1,6 @@
 URGENT:
 * type checking on array assignments
-
 * typed constants
-
-* add exit statements for procedures
-
 * prevent functions being called without an lvalue
 
 

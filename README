@@ -4,3 +4,7 @@ perl Configure.pl
 make # to build compiler / interpreter.
 make test # to run test suite.
 make testtest # to compile test suite against gpc.
+make porcupine # make fake executable
+
+# run exampl web server
+../../parrot porcupine examples/httpd.pas
